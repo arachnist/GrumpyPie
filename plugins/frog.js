@@ -1,24 +1,25 @@
 'use strict';
 
-const request = require('request-promise');
+const request = require('request');
 
 module.exports = (bot, config) => {
     const frogTipsUrl = 'http://frog.tips/api/1/tips/';
     var tips = [];
 
+    function fetchNewTips() {
+        return request(frogTipsUrl, function(error, response, body) {
+            if (!error && response.statusCode == 200) {
+                tips = JSON.parse(body)["tips"];
+            }
+        });
+    }
+
     function getTip() {
         if (tips.length == 0) {
-            request(frogTipsUrl)
-                .then(function (body) {
-                    tips = JSON.parse(body)["tips"];
-                    return tips.pop()["tip"]
-                })
-                .catch(function (err) {
-                    console.log("error: ", err)
-                });
-        } else {
-            return tips.pop()["tip"];
+            fetchNewTips();
         }
+
+        return tips.pop()["tip"];
     }
 
     const frogTip = (channel) => {
